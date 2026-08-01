@@ -1,5 +1,10 @@
 import SwiftUI
 
+enum Plan: String {
+    case monthly
+    case lifetime
+}
+
 struct ContentView: View {
 
     @State private var isFlashOn = false
@@ -104,6 +109,7 @@ struct ContentView: View {
 struct PaywallView: View {
 
     var close: () -> Void
+    @State private var selectedPlan: Plan = .lifetime
 
     var body: some View {
 
@@ -140,38 +146,58 @@ struct PaywallView: View {
 
             HStack(spacing: 14) {
 
-                SubscribeCard(
-                    title: "Monthly",
-                    price: "$9.99",
-                    period: "/month",
-                    badge: nil,
-                    selected: false
-                )
+                Button {
+                    selectedPlan = .monthly
+                } label: {
+                    SubscribeCard(
+                        title: "Monthly",
+                        price: "$9.99",
+                        period: "/month",
+                        badge: nil,
+                        selected: selectedPlan == .monthly
+                    )
+                }
+                .buttonStyle(.plain)
 
-                SubscribeCard(
-                    title: "Lifetime",
-                    price: "$299",
-                    period: "once",
-                    badge: "BEST VALUE",
-                    selected: true
-                )
-
+                Button {
+                    selectedPlan = .lifetime
+                } label: {
+                    SubscribeCard(
+                        title: "Lifetime",
+                        price: "$299",
+                        period: "once",
+                        badge: "BEST VALUE",
+                        selected: selectedPlan == .lifetime
+                    )
+                }
+                .buttonStyle(.plain)
             }
+            
+            Button {
 
-            Button(action: close) {
+                print("Selected plan:", selectedPlan)
 
-                Text("Continue")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(.white)
-                    .foregroundStyle(.black)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                close()
 
+            } label: {
+
+                Text(
+                    selectedPlan == .monthly
+                    ? "Continue • $9.99/month"
+                    : "Continue • $299 Lifetime"
+                )
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(.white)
+                .foregroundStyle(.black)
+                .clipShape(RoundedRectangle(cornerRadius: 18))
             }
 
             Button("Maybe Later", action: close)
                 .foregroundStyle(.secondary)
+            
+            
         }
         .padding(24)
     }
@@ -251,14 +277,19 @@ struct SubscribeCard: View {
         .overlay {
             RoundedRectangle(cornerRadius: 24)
                 .stroke(
-                    selected
-                    ? Color.yellow
-                    : Color.white.opacity(0.08),
+                    selected ? Color.yellow : Color.white.opacity(0.08),
                     lineWidth: selected ? 2 : 1
                 )
         }
+        .scaleEffect(selected ? 1.03 : 1)
+        .shadow(
+            color: selected ? .yellow.opacity(0.25) : .clear,
+            radius: 12
+        )
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selected)
     }
 }
+
 
 #Preview {
     ContentView()
